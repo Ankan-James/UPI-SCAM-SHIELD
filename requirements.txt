@@ -1,0 +1,14 @@
+
+fastapi
+uvicorn[standard]
+pydantic
+sqlalchemy
+alembic
+python-jose[cryptography]
+passlib[argon2]
+python-multipart
+httpx
+python-dotenv
+qrcode[pil]
+Pillow
+pytest
