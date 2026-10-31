@@ -7,7 +7,7 @@ alembic
 python-jose[cryptography]
 passlib[argon2]
 python-multipart
-httpx
+httpx<0.28
 python-dotenv
 qrcode[pil]
 Pillow
