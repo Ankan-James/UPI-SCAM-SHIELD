@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/responsive.css">
     <script src="js/main.js" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/auth.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -17,8 +19,12 @@
       <a class="brand" href="index.html" aria-label="NUMPE home"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" data-menu-toggle><span class="sr-only">Open navigation menu</span><span class="menu-icon" aria-hidden="true"></span></button>
       <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation" data-navigation>
-        <a href="about.html" data-nav-link>About</a><a href="awareness.html" data-nav-link aria-current="page">Safety guide</a><a href="download.html" data-nav-link>Get the app</a><a class="nav-cta" href="download.html">Explore NUMPE</a>
+        <a href="about.html" data-nav-link>About</a><a href="awareness.html" data-nav-link aria-current="page">Safety guide</a><a href="download.html" data-nav-link>Get the app</a><a href="pages/login.html" data-login-link>Log in</a>
+          <span class="auth-greeting" data-auth-greeting hidden></span>
+          <button class="auth-logout" type="button" data-auth-logout hidden>Log out</button>
+          <a class="nav-cta" href="download.html">Explore NUMPE</a>
       </nav>
+      <p class="auth-nav-status" data-auth-nav-status role="status" aria-live="polite" hidden></p>
     </div></header>
     <main id="main">
       <section class="page-hero section"><div class="container narrow">

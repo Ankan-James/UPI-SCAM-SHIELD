@@ -5,17 +5,71 @@ Use `transaction()` for writes so a failure rolls everything back.
 """
 import os
 import sqlite3
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
+
+from sqlalchemy import create_engine, event
+from sqlalchemy.engine import Engine, URL
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from backend.app.config import settings
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = REPO_ROOT / "database" / "schema.sql"
 USER_NAME_MIGRATION_PATH = REPO_ROOT / "database" / "migrations" / "001_add_user_name.sql"
-DEFAULT_DB_PATH = REPO_ROOT / "backend" / "data" / "scam_shield.db"  # git-ignored
+DEFAULT_DB_PATH = Path(settings.database_path)
 
 
 def get_db_path() -> Path:
-    return Path(os.getenv("DATABASE_PATH", DEFAULT_DB_PATH))
+    configured_path = Path(os.getenv("DATABASE_PATH", DEFAULT_DB_PATH)).expanduser()
+    if not configured_path.is_absolute():
+        configured_path = REPO_ROOT / configured_path
+    return configured_path
+
+
+def create_database_engine(database_path: str | Path | None = None) -> Engine:
+    path = Path(database_path or settings.database_path).expanduser()
+    is_memory_database = str(path) == ":memory:"
+    if not is_memory_database:
+        if not path.is_absolute():
+            path = REPO_ROOT / path
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+    connect_args = {"check_same_thread": False}
+    engine_options = {}
+    if is_memory_database:
+        engine_options["poolclass"] = StaticPool
+
+    database_url = URL.create(
+        "sqlite",
+        database=":memory:" if is_memory_database else str(path),
+    )
+    database_engine = create_engine(
+        database_url,
+        connect_args=connect_args,
+        pool_pre_ping=True,
+        **engine_options,
+    )
+
+    @event.listens_for(database_engine, "connect")
+    def enable_foreign_keys(dbapi_connection, _connection_record) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys = ON")
+        cursor.close()
+
+    return database_engine
+
+
+engine = create_database_engine()
+SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+
+
+def get_session() -> Iterator[Session]:
+    """FastAPI dependency for SQLAlchemy-backed routes."""
+    with SessionLocal() as session:
+        yield session
 
 
 def get_connection(db_path=None) -> sqlite3.Connection:
@@ -58,7 +112,7 @@ def init_db(db_path=None) -> None:
         conn.close()
 
 
-def get_db():
+def get_db() -> Iterator[sqlite3.Connection]:
     """FastAPI dependency: one connection per request (reads; use transaction() to write)."""
     conn = get_connection()
     try:

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
@@ -13,7 +13,15 @@ import {
 import { demoRecipients, initialTransactions, safetyLessons } from './data/demoData'
 import {
   analyzeItem, analyzeRecipient, sendPayment, submitReport, updatePaymentLock,
+  loginUser, registerUser, logoutUser, getCurrentUser, getStoredUser, getStoredToken,
 } from './services/api'
+
+const getInitials = (name) => {
+  if (!name) return 'NU'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
 import './App.css'
 
 const money = (value) => `₹${Number(value).toLocaleString('en-IN')}`
@@ -66,42 +74,62 @@ function Welcome({ onExplore }) {
   </main>
 }
 
-function AuthPage({ register = false, onContinue }) {
+function AuthPage({ register = false, onAuthSuccess }) {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  function submit(event) {
+
+  async function submit(event) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
+    const email = String(form.get('identity') || form.get('email') || '').trim()
+    const password = String(form.get('password') || '')
+    const name = String(form.get('name') || '').trim()
+
     if (register && form.get('password') !== form.get('confirm')) return setError('Your passwords do not match.')
-    if (String(form.get('password') ?? '').length < 8) return setError('Use at least 8 characters for your password.')
+    if (password.length < 8) return setError('Use at least 8 characters for your password.')
     setError('')
     setBusy(true)
-    window.setTimeout(() => { setBusy(false); onContinue(); navigate('/app/dashboard') }, 500)
+
+    try {
+      if (register) {
+        await registerUser({ name, email, password })
+      }
+      const session = await loginUser({ email, password })
+      if (onAuthSuccess) onAuthSuccess(session.user)
+      navigate('/app/dashboard')
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please verify credentials.')
+    } finally {
+      setBusy(false)
+    }
   }
-  return <main className="auth-page"><button className="auth-back" onClick={() => navigate('/')}><ArrowLeft size={17} /> Back to NUMPE</button><div className="auth-card"><Logo /><div className="auth-heading"><div className="eyebrow">A PRIVATE DEMO SPACE</div><h1>{register ? 'Let’s get you started.' : 'Welcome back.'}</h1><p>{register ? 'Create your demo profile. No real bank details needed.' : 'Sign in to your simulated NUMPE wallet.'}</p></div>
+
+  return <main className="auth-page"><button className="auth-back" onClick={() => navigate('/')}><ArrowLeft size={17} /> Back to NUMPE</button><div className="auth-card"><Logo /><div className="auth-heading"><div className="eyebrow">CONNECTED TO NUMPE DATABASE</div><h1>{register ? 'Let’s get you started.' : 'Welcome back.'}</h1><p>{register ? 'Create your account. Stored securely in database.' : 'Sign in to access your NUMPE wallet & Scam Shield.'}</p></div>
     <form onSubmit={submit} className="auth-form">
-      {register && <label>Full name<input required name="name" placeholder="e.g. Aanya Sharma" autoComplete="name" /></label>}
-      <label>{register ? 'Email address' : 'Email or phone'}<input required name="identity" type={register ? 'email' : 'text'} placeholder={register ? 'you@example.com' : 'Enter email or phone'} autoComplete="username" /></label>
-      {register && <label>Phone number<input required name="phone" type="tel" placeholder="+91 98765 43210" autoComplete="tel" /></label>}
+      {register && <label>Full name<input required name="name" placeholder="e.g. Ankan Mondal" autoComplete="name" /></label>}
+      <label>{register ? 'Email address' : 'Email address'}<input required name="identity" type="email" placeholder={register ? 'you@example.com' : 'Enter your email'} autoComplete="username" /></label>
+      {register && <label>Phone number (optional)<input name="phone" type="tel" placeholder="+91 98765 43210" autoComplete="tel" /></label>}
       <label>Password<div className="password-wrap"><input required name="password" type={showPassword ? 'text' : 'password'} placeholder="At least 8 characters" autoComplete={register ? 'new-password' : 'current-password'} /><button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
       {register && <label>Confirm password<input required name="confirm" type="password" placeholder="Re-enter password" autoComplete="new-password" /></label>}
-      {!register && <button type="button" className="forgot-link" onClick={() => setError('Password reset is not connected in this demo. You can explore the app without an account.')}>Forgot password?</button>}
+      {!register && <button type="button" className="forgot-link" onClick={() => setError('Password reset is not configured for self-service in this build.')}>Forgot password?</button>}
       {error && <div className="form-error" role="alert">{error}</div>}
-      <button className="button button-primary button-full" disabled={busy}>{busy ? 'Setting up your demo…' : register ? 'Create demo profile' : 'Log in'} <ArrowRight size={17} /></button>
+      <button className="button button-primary button-full" disabled={busy}>{busy ? 'Authenticating with database…' : register ? 'Create account' : 'Log in'} <ArrowRight size={17} /></button>
     </form>
-    <p className="auth-switch">{register ? 'Already have a profile?' : 'New to NUMPE?'} <button onClick={() => navigate(register ? '/login' : '/register')}>{register ? 'Log in' : 'Create a demo account'}</button></p><div className="auth-simulated"><LockKeyhole size={14} /> Demo authentication only · Passwords are never stored</div>
+    <p className="auth-switch">{register ? 'Already have an account?' : 'New to NUMPE?'} <button onClick={() => navigate(register ? '/login' : '/register')}>{register ? 'Log in' : 'Create an account'}</button></p><div className="auth-simulated"><LockKeyhole size={14} /> Connected to SQLite backend · Argon2/PBKDF2 security</div>
   </div></main>
 }
 
-function Sidebar({ mobileOpen, setMobileOpen, onLogout }) {
+function Sidebar({ mobileOpen, setMobileOpen, onLogout, user }) {
   const location = useLocation()
-  return <><aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}><div className="sidebar-brand"><Logo /><button className="mobile-close" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={19} /></button></div><div className="workspace-label">YOUR SPACE</div><nav className="side-nav">{navigation.map(({ to, label, icon: Icon, featured }) => <NavLink key={to} to={to} onClick={() => setMobileOpen(false)} className={({ isActive }) => `nav-link ${isActive || (to !== '/app/dashboard' && location.pathname.startsWith(to)) ? 'active' : ''} ${featured ? 'nav-featured' : ''}`}><Icon size={18} /><span>{label}</span>{featured && <span className="nav-new">AI</span>}</NavLink>)}</nav><div className="sidebar-bottom"><div className="sidebar-help"><div className="help-icon"><CircleHelp size={17} /></div><div><b>Need a hand?</b><small>Visit our safety centre</small></div><ArrowRight size={15} /></div><button className="profile-mini" onClick={onLogout}><div className="avatar avatar-indigo">AS</div><div className="profile-mini-copy"><b>Aanya Sharma</b><small>Demo profile</small></div><LogOut size={16} /></button></div></aside>{mobileOpen && <button className="sidebar-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}</>
+  const displayName = user?.name || 'NUMPE User'
+  const initials = getInitials(displayName)
+  return <><aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}><div className="sidebar-brand"><Logo /><button className="mobile-close" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={19} /></button></div><div className="workspace-label">YOUR SPACE</div><nav className="side-nav">{navigation.map(({ to, label, icon: Icon, featured }) => <NavLink key={to} to={to} onClick={() => setMobileOpen(false)} className={({ isActive }) => `nav-link ${isActive || (to !== '/app/dashboard' && location.pathname.startsWith(to)) ? 'active' : ''} ${featured ? 'nav-featured' : ''}`}><Icon size={18} /><span>{label}</span>{featured && <span className="nav-new">AI</span>}</NavLink>)}</nav><div className="sidebar-bottom"><div className="sidebar-help"><div className="help-icon"><CircleHelp size={17} /></div><div><b>Need a hand?</b><small>Visit our safety centre</small></div><ArrowRight size={15} /></div><button className="profile-mini" onClick={onLogout}><div className="avatar avatar-indigo">{initials}</div><div className="profile-mini-copy"><b>{displayName}</b><small>{user?.email || 'Logged in'}</small></div><LogOut size={16} /></button></div></aside>{mobileOpen && <button className="sidebar-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}</>
 }
 
 function Shell({ app }) {
-  const { locked, toast, setToast, onLogout } = app
+  const { locked, toast, setToast, onLogout, user } = app
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
   const active = navigation.find((item) => location.pathname.startsWith(item.to))
@@ -113,7 +141,8 @@ function Shell({ app }) {
   const pageTitle = pageTitles[location.pathname] ?? active?.label ?? 'Overview'
   function notify(message) { setToast(message); window.setTimeout(() => setToast(''), 3200) }
   const shared = { ...app, notify }
-  return <div className="app-shell"><Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} onLogout={onLogout} /><div className="app-main"><header className="topbar"><button className="menu-toggle" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={21} /></button><div className="breadcrumb"><span>NUMPE</span><span className="crumb-slash">/</span><b>{pageTitle}</b></div><div className="topbar-right"><div className={`lock-status ${locked ? 'is-locked' : ''}`}><span />{locked ? 'Payments locked' : 'Shield active'}</div><button className="icon-button notification-button" aria-label="Notifications" onClick={() => notify('You’re all caught up — no new alerts.')}><Bell size={18} /><i /></button><div className="avatar avatar-indigo top-avatar">AS</div></div></header>
+  const initials = getInitials(user?.name)
+  return <div className="app-shell"><Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} onLogout={onLogout} user={user} /><div className="app-main"><header className="topbar"><button className="menu-toggle" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={21} /></button><div className="breadcrumb"><span>NUMPE</span><span className="crumb-slash">/</span><b>{pageTitle}</b></div><div className="topbar-right"><div className={`lock-status ${locked ? 'is-locked' : ''}`}><span />{locked ? 'Payments locked' : 'Shield active'}</div><button className="icon-button notification-button" aria-label="Notifications" onClick={() => notify('You’re all caught up — no new alerts.')}><Bell size={18} /><i /></button><div className="avatar avatar-indigo top-avatar">{initials}</div></div></header>
     <main className="page-content"><AnimatePresence mode="wait"><motion.div key={location.pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="page-transition">
       <Routes>
         <Route path="dashboard" element={<Dashboard {...shared} />} />
@@ -138,8 +167,8 @@ function Dashboard({ balance, transactions, locked, setLocked, notify }) {
   const navigate = useNavigate()
   const [showBalance, setShowBalance] = useState(true)
   const recent = transactions.slice(0, 4)
-  return <div className="dashboard-page"><div className="dashboard-greeting"><div><div className="eyebrow">FRIDAY, OCTOBER 30, 2026</div><h1>Good evening, Aanya <span className="wave">✦</span></h1><p>Here’s your money snapshot for today.</p></div><div className="shield-active-pill"><ShieldCheck size={16} /> Scam Shield is on</div></div>
-    <div className="dashboard-grid"><section className="balance-card"><div className="balance-top"><div className="balance-label"><span className="balance-chip"><Wallet size={15} /> DEMO BALANCE</span><span className="balance-caption">Available in your virtual wallet</span></div><button className="balance-eye" aria-label={showBalance ? 'Hide balance' : 'Show balance'} onClick={() => setShowBalance(!showBalance)}>{showBalance ? <Eye size={18} /> : <EyeOff size={18} />}</button></div><div className="balance-amount">{showBalance ? money(balance) : '₹ ••••••'}</div><div className="balance-bottom"><div><small>NUMPE UPI ID</small><span>aanya.sharma@numpe</span></div><div className="virtual-card-art"><span>••••</span><span>2048</span></div></div><div className="balance-orb orb-one" /><div className="balance-orb orb-two" /></section>
+  return <div className="dashboard-page"><div className="dashboard-greeting"><div><div className="eyebrow">FRIDAY, OCTOBER 30, 2026</div><h1>Good day, {user?.name ? user.name.split(' ')[0] : 'Member'} <span className="wave">✦</span></h1><p>Here’s your money snapshot for today.</p></div><div className="shield-active-pill"><ShieldCheck size={16} /> Scam Shield is on</div></div>
+    <div className="dashboard-grid"><section className="balance-card"><div className="balance-top"><div className="balance-label"><span className="balance-chip"><Wallet size={15} /> DEMO BALANCE</span><span className="balance-caption">Available in your virtual wallet</span></div><button className="balance-eye" aria-label={showBalance ? 'Hide balance' : 'Show balance'} onClick={() => setShowBalance(!showBalance)}>{showBalance ? <Eye size={18} /> : <EyeOff size={18} />}</button></div><div className="balance-amount">{showBalance ? money(balance) : '₹ ••••••'}</div><div className="balance-bottom"><div><small>NUMPE UPI ID</small><span>{user?.upi_id || 'user@numpe'}</span></div><div className="virtual-card-art"><span>••••</span><span>2048</span></div></div><div className="balance-orb orb-one" /><div className="balance-orb orb-two" /></section>
       <section className="quick-card"><div className="card-title-row"><div><h2>Quick actions</h2><p>What would you like to do?</p></div><span className="tiny-demo">DEMO</span></div><div className="quick-actions">
         {[{ label: 'Send', icon: ArrowUpRight, to: '/app/payments', cls: 'quick-blue' }, { label: 'Receive', icon: ArrowDownLeft, to: '/app/receive', cls: 'quick-green' }, { label: 'Scan QR', icon: ScanLine, to: '/app/scan', cls: 'quick-violet' }, { label: 'Shield', icon: ShieldCheck, to: '/app/shield', cls: 'quick-amber' }].map(({ label, icon: Icon, to, cls }) => <button key={label} onClick={() => navigate(to)} className="quick-action"><span className={`quick-icon ${cls}`}><Icon size={20} /></span><span>{label}</span></button>)}</div></section>
     </div>
@@ -213,13 +242,16 @@ function SendMoney({ balance, locked, setBalance, setTransactions, notify }) {
   </div>
 }
 
-function Receive({ notify }) {
+function Receive({ notify, user }) {
   const [copied, setCopied] = useState(false)
+  const upiId = user?.upi_id || 'user@numpe'
+  const displayName = user?.name || 'NUMPE User'
+  const qrUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(displayName)}`
   async function copyId() {
-    try { await navigator.clipboard.writeText('aanya.sharma@numpe'); setCopied(true); notify('Demo UPI ID copied to clipboard.'); window.setTimeout(() => setCopied(false), 1800) }
+    try { await navigator.clipboard.writeText(upiId); setCopied(true); notify('UPI ID copied to clipboard.'); window.setTimeout(() => setCopied(false), 1800) }
     catch { notify('Clipboard access is unavailable in this browser.') }
   }
-  return <div><PageHeading eyebrow="GET PAID, SAFELY" title="Receive money" text="Share your demo UPI ID or show your QR code to another demo user." /><div className="receive-layout"><section className="panel receive-card"><div className="receive-card-heading"><div className="receive-emblem"><QrCode size={21} /></div><div><b>Your demo QR</b><small>Scan to view this demo profile</small></div><span className="tiny-demo">SIMULATED</span></div><div className="qr-placeholder" role="img" aria-label="Demo UPI QR code for aanya.sharma@numpe"><QRCodeSVG value="upi://pay?pa=aanya.sharma%40numpe&pn=Aanya%20Sharma" size={152} level="H" fgColor="#1b2b50" /></div><div className="qr-demo-note"><ShieldCheck size={14} /> Demo QR · Not for real payments</div><div className="upi-copy"><div><small>YOUR NUMPE UPI ID</small><b>aanya.sharma@numpe</b></div><button className="button button-outline" onClick={copyId}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copied' : 'Copy ID'}</button></div></section><aside className="panel receive-info"><div className="receive-info-icon"><HeartHandshake size={23} /></div><div className="eyebrow">SENDING SHOULD FEEL SIMPLE</div><h2>Only share what’s needed.</h2><p>People can send money to your demo UPI ID. You never need to share an OTP or enter your UPI PIN to receive a payment.</p><div className="receive-tip"><ShieldCheck size={17} /><span>Always check your own app for a payment confirmation — not a screenshot.</span></div></aside></div></div>
+  return <div><PageHeading eyebrow="GET PAID, SAFELY" title="Receive money" text="Share your verified UPI ID or show your QR code." /><div className="receive-layout"><section className="panel receive-card"><div className="receive-card-heading"><div className="receive-emblem"><QrCode size={21} /></div><div><b>Your personal QR</b><small>{displayName}</small></div><span className="tiny-demo">CONNECTED</span></div><div className="qr-placeholder" role="img" aria-label={`UPI QR code for ${upiId}`}><QRCodeSVG value={qrUri} size={152} level="H" fgColor="#1b2b50" /></div><div className="qr-demo-note"><ShieldCheck size={14} /> Connected to database account</div><div className="upi-copy"><div><small>YOUR NUMPE UPI ID</small><b>{upiId}</b></div><button className="button button-outline" onClick={copyId}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copied' : 'Copy ID'}</button></div></section><aside className="panel receive-info"><div className="receive-info-icon"><HeartHandshake size={23} /></div><div className="eyebrow">SENDING SHOULD FEEL SIMPLE</div><h2>Only share what’s needed.</h2><p>People can send money to your demo UPI ID. You never need to share an OTP or enter your UPI PIN to receive a payment.</p><div className="receive-tip"><ShieldCheck size={17} /><span>Always check your own app for a payment confirmation — not a screenshot.</span></div></aside></div></div>
 }
 
 function QrInspector() {
@@ -300,8 +332,12 @@ function LearnPage() {
   return <div><PageHeading eyebrow="SMALL PAUSES, SAFER PAYMENTS" title="Safety centre" text="A few simple checks can help you stay one step ahead." /><div className="learn-grid">{safetyLessons.map((lesson, i) => { const Icon = iconMap[lesson.icon]; return <button className={`lesson-card ${selected === i ? 'lesson-open' : ''}`} key={lesson.title} onClick={() => setSelected(selected === i ? null : i)}><span className="lesson-icon"><Icon size={20} /></span><span className="lesson-number">0{i + 1}</span><b>{lesson.title}</b><p>{lesson.text}</p><span className="lesson-expand">{selected === i ? 'Close tip' : 'Read the tip'} <ChevronDown size={14} /></span></button> })}</div><section className="panel learn-bottom"><span className="learn-bottom-icon"><ShieldCheck size={22} /></span><div><b>Remember: you can always take a moment.</b><p>A legitimate request will still make sense after you pause, check, and verify.</p></div></section></div>
 }
 
-function SettingsPage({ locked, setLocked, notify, onLogout }) {
-  return <div><PageHeading eyebrow="YOUR NUMPE SPACE" title="Settings" text="Manage your demo profile and payment safety preferences." /><div className="settings-layout"><section className="panel settings-card"><div className="settings-section-head"><div className="avatar avatar-indigo avatar-large">AS</div><div><h2>Aanya Sharma</h2><p>Demo profile · Member since today</p></div><span className="profile-verified"><BadgeCheck size={15} /> Demo</span></div><SettingRow icon={UserRound} title="Profile information" detail="Aanya Sharma · aanya.sharma@numpe" onClick={() => notify('Profile editing is not connected in the demo.')} /><SettingRow icon={Wallet} title="Virtual UPI ID" detail="aanya.sharma@numpe" onClick={async () => { try { await navigator.clipboard.writeText('aanya.sharma@numpe'); notify('Demo UPI ID copied.') } catch { notify('Clipboard access is unavailable.') } }} /><SettingRow icon={KeyRound} title="MPIN settings" detail="Demo only · Never stored" onClick={() => notify('MPIN setup is simulated and no MPIN is stored.')} /><SettingRow icon={Bell} title="Notifications" detail="Payment and safety alerts enabled" onClick={() => notify('Notification preferences are enabled for this demo.')} /><SettingRow icon={LockKeyhole} title="Privacy & security" detail="Review how NUMPE keeps your demo safe" onClick={() => notify('Demo inputs are not saved to an account.')} /><button className="settings-logout" onClick={onLogout}><LogOut size={17} /> Log out of demo</button></section><aside className="settings-side"><div className={`settings-lock ${locked ? 'locked' : ''}`}><div className="lock-card-icon">{locked ? <LockKeyhole size={20} /> : <ShieldCheck size={20} />}</div><div><b>Emergency Payment Lock</b><p>{locked ? 'Outgoing simulated payments are paused.' : 'Pause all outgoing demo payments.'}</p></div><button className={`toggle ${locked ? 'toggle-on' : ''}`} aria-pressed={locked} aria-label={locked ? 'Unlock payments' : 'Lock payments'} onClick={async () => { try { const result = await updatePaymentLock(!locked); setLocked(result.locked); notify(result.locked ? 'Emergency payment lock activated.' : 'Outgoing demo payments unlocked.') } catch (e) { notify(e.message) } }}><span /></button></div><div className="settings-note"><ShieldCheck size={17} /><span>Lock status is shown in this interface only after the demo service confirms it. Payments are simulated.</span></div></aside></div></div>
+function SettingsPage({ locked, setLocked, notify, onLogout, user }) {
+  const displayName = user?.name || 'NUMPE User'
+  const upiId = user?.upi_id || 'user@numpe'
+  const email = user?.email || 'Logged in user'
+  const initials = getInitials(displayName)
+  return <div><PageHeading eyebrow="YOUR NUMPE SPACE" title="Settings" text="Manage your account profile and payment safety preferences." /><div className="settings-layout"><section className="panel settings-card"><div className="settings-section-head"><div className="avatar avatar-indigo avatar-large">{initials}</div><div><h2>{displayName}</h2><p>{email}</p></div><span className="profile-verified"><BadgeCheck size={15} /> Verified</span></div><SettingRow icon={UserRound} title="Profile information" detail={`${displayName} · ${email}`} onClick={() => notify('Profile information is synchronized with SQLite database.')} /><SettingRow icon={Wallet} title="Virtual UPI ID" detail={upiId} onClick={async () => { try { await navigator.clipboard.writeText(upiId); notify('UPI ID copied.') } catch { notify('Clipboard access is unavailable.') } }} /><SettingRow icon={KeyRound} title="MPIN settings" detail="Demo only · Never stored" onClick={() => notify('MPIN setup is simulated and no MPIN is stored.')} /><SettingRow icon={Bell} title="Notifications" detail="Payment and safety alerts enabled" onClick={() => notify('Notification preferences are enabled for this demo.')} /><SettingRow icon={LockKeyhole} title="Privacy & security" detail="Review how NUMPE keeps your demo safe" onClick={() => notify('Demo inputs are not saved to an account.')} /><button className="settings-logout" onClick={onLogout}><LogOut size={17} /> Log out of demo</button></section><aside className="settings-side"><div className={`settings-lock ${locked ? 'locked' : ''}`}><div className="lock-card-icon">{locked ? <LockKeyhole size={20} /> : <ShieldCheck size={20} />}</div><div><b>Emergency Payment Lock</b><p>{locked ? 'Outgoing simulated payments are paused.' : 'Pause all outgoing demo payments.'}</p></div><button className={`toggle ${locked ? 'toggle-on' : ''}`} aria-pressed={locked} aria-label={locked ? 'Unlock payments' : 'Lock payments'} onClick={async () => { try { const result = await updatePaymentLock(!locked); setLocked(result.locked); notify(result.locked ? 'Emergency payment lock activated.' : 'Outgoing demo payments unlocked.') } catch (e) { notify(e.message) } }}><span /></button></div><div className="settings-note"><ShieldCheck size={17} /><span>Lock status is shown in this interface only after the demo service confirms it. Payments are simulated.</span></div></aside></div></div>
 }
 
 function SettingRow({ icon: Icon, title, detail, onClick }) {
@@ -314,15 +350,88 @@ function MobileNav() {
 }
 
 function AppRoutes() {
-  const [balance, setBalance] = useState(24580)
+  const [user, setUser] = useState(() => getStoredUser())
+  const [authenticated, setAuthenticated] = useState(() => Boolean(getStoredToken() && getStoredUser()))
+  const [balance, setBalance] = useState(() => {
+    const u = getStoredUser()
+    return u?.balance_in_paise ? u.balance_in_paise / 100 : 24580
+  })
   const [transactions, setTransactions] = useState(initialTransactions)
   const [locked, setLocked] = useState(false)
   const [toast, setToast] = useState('')
-  const [authenticated, setAuthenticated] = useState(false)
   const navigate = useNavigate()
-  const logout = () => { setAuthenticated(false); navigate('/') }
-  const app = { balance, transactions, locked, toast, setToast, setBalance, setTransactions, setLocked, onLogout: logout }
-  return <Routes><Route path="/" element={<Welcome onExplore={() => { setAuthenticated(true); navigate('/app/dashboard') }} />} /><Route path="/login" element={<AuthPage onContinue={() => setAuthenticated(true)} />} /><Route path="/register" element={<AuthPage register onContinue={() => setAuthenticated(true)} />} /><Route path="/app/*" element={authenticated ? <Shell app={app} /> : <Navigate to="/" replace />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>
+
+  useEffect(() => {
+    async function verifyAuth() {
+      if (getStoredToken()) {
+        const freshUser = await getCurrentUser()
+        if (freshUser) {
+          setUser(freshUser)
+          setAuthenticated(true)
+          if (freshUser.balance_in_paise) {
+            setBalance(freshUser.balance_in_paise / 100)
+          }
+        }
+      }
+    }
+    verifyAuth()
+  }, [])
+
+  const handleAuthSuccess = (loggedUser) => {
+    setUser(loggedUser)
+    setAuthenticated(true)
+    if (loggedUser?.balance_in_paise) {
+      setBalance(loggedUser.balance_in_paise / 100)
+    }
+  }
+
+  const logout = async () => {
+    await logoutUser()
+    setUser(null)
+    setAuthenticated(false)
+    navigate('/')
+  }
+
+  const app = {
+    balance,
+    transactions,
+    locked,
+    toast,
+    setToast,
+    setBalance,
+    setTransactions,
+    setLocked,
+    onLogout: logout,
+    user,
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Welcome
+            onExplore={() => {
+              navigate(authenticated ? '/app/dashboard' : '/login')
+            }}
+          />
+        }
+      />
+      <Route
+        path="/login"
+        element={<AuthPage onAuthSuccess={handleAuthSuccess} />}
+      />
+      <Route
+        path="/register"
+        element={<AuthPage register onAuthSuccess={handleAuthSuccess} />}
+      />
+      <Route
+        path="/app/*"
+        element={authenticated ? <Shell app={app} /> : <Navigate to="/login" replace />}
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }
 
 export default function App() {
