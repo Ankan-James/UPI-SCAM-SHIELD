@@ -10,6 +10,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = REPO_ROOT / "database" / "schema.sql"
+USER_NAME_MIGRATION_PATH = REPO_ROOT / "database" / "migrations" / "001_add_user_name.sql"
 DEFAULT_DB_PATH = REPO_ROOT / "backend" / "data" / "scam_shield.db"  # git-ignored
 
 
@@ -48,6 +49,11 @@ def init_db(db_path=None) -> None:
     conn = get_connection(db_path)
     try:
         conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+        user_columns = {
+            row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()
+        }
+        if "name" not in user_columns:
+            conn.executescript(USER_NAME_MIGRATION_PATH.read_text(encoding="utf-8"))
     finally:
         conn.close()
 

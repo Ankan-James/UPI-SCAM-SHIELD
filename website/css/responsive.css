@@ -19,6 +19,7 @@
   .footer-brand { grid-column: 1 / -1; }
   .safety-banner, .cta-panel { align-items: flex-start; flex-direction: column; }
   .download-card { padding: 28px; }
+  .payment-demo-card { max-width: 520px; padding: 24px; }
   .page-hero { padding-block: 58px 48px; }
 
   body.menu-enhanced .menu-toggle { display: inline-flex; }
@@ -44,6 +45,10 @@
   .primary-navigation .nav-cta { margin-top: 5px; text-align: center; }
 
   body:not(.menu-enhanced) .primary-navigation { flex-wrap: wrap; gap: 10px 17px; padding-block: 12px; }
+
+  .primary-navigation .auth-greeting { padding: 12px 10px 0; }
+
+  .primary-navigation .auth-logout { margin: 6px 10px; }
 }
 
 @media (max-width: 480px) {
@@ -61,6 +66,11 @@
   .callout-panel, .not-found-card { padding: 26px; }
   .cta-panel { padding: 25px; }
   .download-card { padding: 24px; }
+  .payment-demo-card { padding: 21px; }
+  .payment-demo-heading { align-items: flex-start; flex-direction: column; }
+  .payment-demo-heading .pill { margin-top: 0; }
+  .risk-dialog-content { padding: 24px; }
+  .auth-card { padding: 25px 21px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

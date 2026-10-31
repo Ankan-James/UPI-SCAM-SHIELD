@@ -16,30 +16,43 @@ router = APIRouter()
 
 
 class RegisterRequest(BaseModel):
-    username: str = Field(..., min_length=3)
-    email: str = Field(..., min_length=3)
-    password: str = Field(..., min_length=6)
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    username: str | None = Field(default=None, min_length=3, max_length=50)
+    email: str = Field(..., min_length=3, max_length=254)
+    password: str = Field(..., min_length=8, max_length=256)
 
 
 class LoginRequest(BaseModel):
-    email: str = Field(..., min_length=3)
-    password: str = Field(..., min_length=6)
+    email: str = Field(..., min_length=3, max_length=254)
+    password: str = Field(..., min_length=1, max_length=256)
 
 
 @router.post("/auth/register")
 def register(payload: RegisterRequest, db: sqlite3.Connection = Depends(get_db)):
+    if not payload.name and not payload.username:
+        raise HTTPException(status_code=422, detail="name is required")
     try:
-        user = AuthService.register_user(db, payload.username, payload.email, payload.password)
+        user = AuthService.register_user(
+            db,
+            payload.username,
+            payload.email,
+            payload.password,
+            name=payload.name,
+        )
         return {"success": True, "user": user}
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        status_code = 409 if "already exists" in str(exc) else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
 
 
 @router.post("/auth/login")
 def login(payload: LoginRequest, db: sqlite3.Connection = Depends(get_db)):
     try:
         user_id, token = AuthService.login_user(db, payload.email, payload.password)
-        return {"success": True, "token": token, "user_id": user_id}
+        user = AuthService.get_user(db, user_id)
+        if user is None:
+            raise HTTPException(status_code=401, detail="invalid email or password")
+        return {"success": True, "token": token, "user": user, "user_id": user_id}
     except ValueError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 

@@ -14,13 +14,24 @@ from backend.app.api.routes.reports import router as reports_router
 from backend.app.api.routes.security import router as security_router
 from backend.app.api.routes.voice import router as voice_router
 from backend.app.database.connection import init_db
+from backend.app.config import settings
 
 app = FastAPI(title="UPI Scam Shield API")
 init_db()
+frontend_origins = {
+    "http://127.0.0.1:5501",
+    "http://localhost:5501",
+}
+if settings.frontend_origin != "*":
+    frontend_origins.update(
+        origin.strip()
+        for origin in settings.frontend_origin.split(",")
+        if origin.strip()
+    )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=sorted(frontend_origins),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

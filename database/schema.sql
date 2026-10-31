@@ -6,6 +6,7 @@
 CREATE TABLE IF NOT EXISTS users (
     user_id       INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT NOT NULL UNIQUE CHECK (length(username) BETWEEN 3 AND 50),
+    name          TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 100),
     email         TEXT NOT NULL UNIQUE COLLATE NOCASE CHECK (length(email) <= 254),
     password_hash TEXT NOT NULL,
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))

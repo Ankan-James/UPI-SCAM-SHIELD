@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/responsive.css">
     <script src="js/main.js" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="js/payment-simulator.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -23,8 +26,12 @@
           <a href="about.html" data-nav-link>About</a>
           <a href="awareness.html" data-nav-link>Safety guide</a>
           <a href="download.html" data-nav-link>Get the app</a>
+          <a href="pages/login.html" data-login-link>Log in</a>
+          <span class="auth-greeting" data-auth-greeting hidden></span>
+          <button class="auth-logout" type="button" data-auth-logout hidden>Log out</button>
           <a class="nav-cta" href="download.html">Explore NUMPE</a>
         </nav>
+        <p class="auth-nav-status" data-auth-nav-status role="status" aria-live="polite" hidden></p>
       </div>
     </header>
 
@@ -39,20 +46,40 @@
               <a class="button button-primary" href="download.html">Explore the app <span aria-hidden="true">&rarr;</span></a>
               <a class="button button-secondary" href="awareness.html">Learn how to stay safe</a>
             </div>
-            <p class="hero-note">Demonstration only. NUMPE does not connect to a bank or move real money.</p>
+            <p class="hero-note">Practice with fictional details. Nothing is sent or saved.</p>
           </div>
-          <aside class="hero-card" aria-label="Three checks to make before a payment">
-            <div class="hero-card-top"><span class="shield-mark" aria-hidden="true">N</span><span class="pill pill-green">SAFER HABITS</span></div>
-            <p class="card-kicker">Before you confirm</p>
-            <ol class="check-list">
-              <li><span class="check-number">01</span><span><strong>Check the recipient</strong><small>Verify the name and payment ID.</small></span></li>
-              <li><span class="check-number">02</span><span><strong>Check the amount</strong><small>Pause before entering your PIN.</small></span></li>
-              <li><span class="check-number">03</span><span><strong>Trust your instincts</strong><small>Stop if someone is rushing you.</small></span></li>
-            </ol>
-            <p class="hero-card-foot">A moment to verify can help prevent a costly mistake.</p>
+          <aside class="payment-demo-card" aria-labelledby="payment-demo-title">
+            <div class="payment-demo-heading">
+              <div><p class="card-kicker">Interactive practice</p><h2 id="payment-demo-title">Review a payment</h2></div>
+              <span class="pill pill-amber">SIMULATION ONLY</span>
+            </div>
+            <p class="payment-demo-intro">Try sample details and see what this simple safety check notices.</p>
+            <form id="payment-demo-form" class="payment-demo-form">
+              <label for="demo-recipient">Recipient UPI ID or phone number</label>
+              <input id="demo-recipient" name="recipient" type="text" inputmode="text" autocomplete="off" maxlength="120" placeholder="name@bank or phone number" required>
+              <label for="demo-amount">Amount <span>(INR)</span></label>
+              <div class="amount-input"><span aria-hidden="true">₹</span><input id="demo-amount" name="amount" type="number" inputmode="decimal" min="0.01" max="10000000" step="0.01" placeholder="500" required></div>
+              <p class="payment-demo-hint">Amounts of ₹10,000 or more are flagged for review in this demo.</p>
+              <label for="demo-note">Payment note <span>(optional)</span></label>
+              <input id="demo-note" name="note" type="text" autocomplete="off" maxlength="240" placeholder="What is this payment for?">
+              <button class="button button-primary payment-demo-submit" type="submit">Pay <span aria-hidden="true">&rarr;</span></button>
+            </form>
+            <p class="payment-demo-disclaimer">No money moves. Details stay in this browser and are not submitted or saved. The check is educational, not a fraud verdict.</p>
+            <p id="payment-demo-result" class="payment-demo-result" role="status" aria-live="polite" hidden></p>
           </aside>
         </div>
       </section>
+
+      <dialog id="risk-dialog" class="risk-dialog" aria-labelledby="risk-dialog-title" aria-describedby="risk-dialog-description">
+        <div class="risk-dialog-content">
+          <p class="eyebrow eyebrow-danger">Pause and verify</p>
+          <h2 id="risk-dialog-title">This payment needs a closer look</h2>
+          <p id="risk-dialog-description">The demo noticed one or more signals that can be associated with risky payment requests.</p>
+          <ul id="risk-dialog-reasons" class="risk-reasons"></ul>
+          <p class="risk-dialog-footnote">These simple signals can be wrong or miss a scam. This is only a simulation—no payment was sent.</p>
+          <form method="dialog"><button class="button button-primary" type="submit">Close and review</button></form>
+        </div>
+      </dialog>
 
       <section class="section section-white" aria-labelledby="features-title">
         <div class="container">

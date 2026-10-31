@@ -34,7 +34,7 @@ The earlier browser failure was caused by a stopped local server (`ERR_EMPTY_RES
 - `404.html`: static not-found page; configure the host to serve it for missing paths.
 - `pages/`: compatibility redirects for the original about, download, and privacy URLs; the old login path now explains that the public site has no sign-in.
 
-The mobile navigation is enhanced only when JavaScript initializes; without JavaScript, the links remain visible. The awareness-page disclosures use native `<details>` elements. The public pages do not call the backend.
+The mobile navigation is enhanced only when JavaScript initializes; without JavaScript, the links remain visible. The awareness-page disclosures use native `<details>` elements. The landing-page payment simulator checks its inputs locally for common suspicious terms and amounts of INR 10,000 or more. It never submits or saves the entered details and does not send money. Its keyword and amount checks are educational signals, not a fraud verdict.
 
 ## APK release configuration
 
