@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:go_router/go_router.dart';
 
 import '../config/api_config.dart';
@@ -9,13 +8,6 @@ import '../models/transaction.dart';
 import '../services/mock_data_service.dart';
 import '../services/session_service.dart';
 import '../theme/app_theme.dart';
-=======
-
-import '../models/scan_result.dart';
-import '../services/api_service.dart';
-import '../widgets/risk_badge.dart';
-import 'result_screen.dart';
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,7 +17,6 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-<<<<<<< HEAD
   final _search = TextEditingController();
   PaymentStatus? _filter;
 
@@ -151,97 +142,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               color: AppColors.navy,
                               fontWeight: FontWeight.w700,
                             ),
-=======
-  final _api = ApiService();
-  late Future<List<Map<String, dynamic>>> _history;
-
-  @override
-  void initState() {
-    super.initState();
-    _history = _api.history();
-  }
-
-  @override
-  void dispose() {
-    _api.close();
-    super.dispose();
-  }
-
-  Future<void> _refresh() async {
-    setState(() => _history = _api.history());
-    await _history;
-  }
-
-  @override
-  Widget build(BuildContext context) => RefreshIndicator(
-        onRefresh: _refresh,
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _history,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  const SizedBox(height: 80),
-                  const Icon(Icons.cloud_off_outlined, size: 44),
-                  const SizedBox(height: 12),
-                  Text('Could not load history.\n${snapshot.error}',
-                      textAlign: TextAlign.center),
-                  TextButton(
-                    onPressed: () => setState(() => _history = _api.history()),
-                    child: const Text('Try again'),
-                  ),
-                ],
-              );
-            }
-            final items = snapshot.data ?? const [];
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Text('Recent checks',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(14),
-                    child: Text(
-                      'The current server history endpoint is shared and is not tied to your account. It shows only scan type, risk level, score, and date.',
-                      style: TextStyle(height: 1.4),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (items.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 36),
-                    child: Text('No checks yet.', textAlign: TextAlign.center),
-                  )
-                else
-                  ...items.map((item) {
-                    final result = ScanResult.fromHistory(item);
-                    return Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.fact_check_outlined),
-                        title: Text(
-                          '${result.type.toUpperCase()} check',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        subtitle: Text(
-                          '${item['created_at'] ?? 'Date unavailable'} · ${result.score}/100',
-                        ),
-                        trailing: RiskBadge(level: result.level),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => ResultScreen(result: result),
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
                           ),
                         ),
                       ),
                     );
-<<<<<<< HEAD
                   },
                 ),
         ),
@@ -320,12 +224,3 @@ class _FilterChip extends StatelessWidget {
     );
   }
 }
-=======
-                  }),
-              ],
-            );
-          },
-        ),
-      );
-}
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3

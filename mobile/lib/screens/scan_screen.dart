@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD
 import '../config/api_config.dart';
 import '../models/risk_assessment.dart';
 import '../services/api_service.dart';
@@ -15,74 +14,35 @@ class ScanScreen extends StatefulWidget {
   const ScanScreen({this.initialInput, super.key});
 
   final String? initialInput;
-=======
-import '../models/scan_result.dart';
-import '../services/api_service.dart';
-import '../utils/validators.dart';
-import '../widgets/loading_indicator.dart';
-import 'result_screen.dart';
-
-class ScanScreen extends StatefulWidget {
-  const ScanScreen({this.initialType, super.key});
-
-  final String? initialType;
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
 
 class _ScanScreenState extends State<ScanScreen> {
-<<<<<<< HEAD
   late final TextEditingController _input;
   String _type = 'text';
   bool _loading = false;
   String? _error;
   RiskAssessment? _result;
-=======
-  final _formKey = GlobalKey<FormState>();
-  final _input = TextEditingController();
-  final _api = ApiService();
-  late String _type;
-  bool _loading = false;
-  String? _error;
-
-  static const _types = {
-    'text': 'Message or payment request',
-    'url': 'Website link',
-    'recipient': 'UPI ID or recipient',
-    'qr': 'QR code contents',
-    'screenshot': 'Text copied from a screenshot',
-  };
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
 
   @override
   void initState() {
     super.initState();
-<<<<<<< HEAD
     _input = TextEditingController(text: widget.initialInput);
     if (widget.initialInput != null) {
       final uri = Uri.tryParse(widget.initialInput!);
       _type = uri?.hasScheme == true ? 'url' : 'text';
     }
-=======
-    _type =
-        _types.containsKey(widget.initialType) ? widget.initialType! : 'text';
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
   }
 
   @override
   void dispose() {
     _input.dispose();
-<<<<<<< HEAD
-=======
-    _api.close();
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
     super.dispose();
   }
 
   Future<void> _analyze() async {
-<<<<<<< HEAD
     final value = _input.text.trim();
     if (value.isEmpty) {
       setState(() {
@@ -125,23 +85,6 @@ class _ScanScreenState extends State<ScanScreen> {
       if (mounted) setState(() => _result = result);
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
-=======
-    if (!_formKey.currentState!.validate()) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final ScanResult result = await _api.analyze(_type, _input.text.trim());
-      if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => ResultScreen(result: result),
-        ),
-      );
-    } on Exception catch (error) {
-      if (mounted) setState(() => _error = error.toString());
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -149,7 +92,6 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     return NumpePage(
       title: 'Scam Shield',
       child: SingleChildScrollView(
@@ -216,71 +158,12 @@ class _ScanScreenState extends State<ScanScreen> {
               const SizedBox(height: AppSpacing.lg),
               _AnalysisResult(assessment: _result!),
             ],
-=======
-    if (_loading) return const Scaffold(body: LoadingIndicator());
-    return Scaffold(
-      appBar: AppBar(title: const Text('Check for a scam')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Text('What would you like to check?',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              initialValue: _type,
-              decoration: const InputDecoration(labelText: 'Check type'),
-              items: _types.entries
-                  .map((item) => DropdownMenuItem(
-                        value: item.key,
-                        child: Text(item.value),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => _type = value);
-              },
-            ),
-            const SizedBox(height: 14),
-            Form(
-              key: _formKey,
-              child: TextFormField(
-                controller: _input,
-                minLines: 5,
-                maxLines: 10,
-                maxLength: 14000000,
-                decoration: const InputDecoration(
-                  alignLabelWithHint: true,
-                  labelText: 'Paste the message, link, or UPI ID',
-                  hintText: 'Do not include your PIN, OTP, or password.',
-                ),
-                validator: (value) => requiredInput(value, label: 'Content'),
-              ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 8),
-              Text(_error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            ],
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _analyze,
-              icon: const Icon(Icons.shield_outlined),
-              label: const Text('Analyze safely'),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Analysis is a guide, not a guarantee. Never send money based only on a scan result.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54),
-            ),
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
           ],
         ),
       ),
     );
   }
 }
-<<<<<<< HEAD
 
 class _AnalysisResult extends StatelessWidget {
   const _AnalysisResult({required this.assessment});
@@ -360,5 +243,3 @@ class _AnalysisResult extends StatelessWidget {
     );
   }
 }
-=======
->>>>>>> d3313048cdd92374dc04c11de22b2a9f06ec34e3
