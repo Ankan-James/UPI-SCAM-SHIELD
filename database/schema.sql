@@ -22,6 +22,26 @@ CREATE TABLE IF NOT EXISTS sessions (
     revoked_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS accounts (
+    account_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id          INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+    account_number   TEXT NOT NULL UNIQUE,
+    upi_id           TEXT NOT NULL UNIQUE,
+    balance_in_paise INTEGER NOT NULL DEFAULT 0 CHECK (balance_in_paise >= 0),
+    created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    transaction_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_user_id          INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+    receiver_user_id        INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+    amount_in_paise         INTEGER NOT NULL CHECK (amount_in_paise > 0),
+    currency                TEXT NOT NULL DEFAULT 'INR',
+    status                  TEXT NOT NULL CHECK (status IN ('pending', 'success', 'failed', 'reversed')),
+    note                    TEXT,
+    created_at              TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
 -- user_id is NULL for failed attempts against unknown accounts, and
 -- becomes NULL if the user is later deleted (audit rows are kept).
 CREATE TABLE IF NOT EXISTS login_history (
@@ -66,7 +86,11 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user      ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_accounts_user      ON accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_accounts_upi       ON accounts(upi_id);
 CREATE INDEX IF NOT EXISTS idx_login_user         ON login_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_analysis_user_time ON analysis_history(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_activity_user      ON activity_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_reports_user       ON reports(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_sender ON transactions(sender_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_receiver ON transactions(receiver_user_id, created_at DESC);

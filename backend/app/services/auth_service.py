@@ -19,6 +19,8 @@ class AuthService:
             raise ValueError("username, email, and password are required")
         if len(normalized_username) < 3:
             raise ValueError("username must be at least 3 characters")
+        if len(password) < 6:
+            raise ValueError("password must be at least 6 characters")
         existing = db.execute(
             "SELECT user_id FROM users WHERE email = ? OR username = ?",
             (normalized_email, normalized_username),
@@ -31,7 +33,13 @@ class AuthService:
             (normalized_username, normalized_email, password_hash),
         )
         user_id = row.lastrowid
-        return {"user_id": user_id, "username": normalized_username, "email": normalized_email}
+        account_number = f"NUMPE{user_id:09d}"
+        upi_id = f"{normalized_username.lower()}@numpe"
+        db.execute(
+            "INSERT INTO accounts (user_id, account_number, upi_id, balance_in_paise) VALUES (?, ?, ?, ?)",
+            (user_id, account_number, upi_id, 1000000),
+        )
+        return {"user_id": user_id, "username": normalized_username, "email": normalized_email, "upi_id": upi_id}
 
     @staticmethod
     def login_user(db: sqlite3.Connection, email: str, password: str) -> tuple[int, str]:
@@ -65,4 +73,13 @@ class AuthService:
         ).fetchone()
         if not row:
             return None
-        return {"user_id": row["user_id"], "username": row["username"], "email": row["email"], "created_at": row["created_at"]}
+        account = db.execute(
+            "SELECT account_number, upi_id, balance_in_paise FROM accounts WHERE user_id = ?",
+            (user_id,),
+        ).fetchone()
+        payload = {"user_id": row["user_id"], "username": row["username"], "email": row["email"], "created_at": row["created_at"]}
+        if account:
+            payload["account_number"] = account["account_number"]
+            payload["upi_id"] = account["upi_id"]
+            payload["balance_in_paise"] = account["balance_in_paise"]
+        return payload
