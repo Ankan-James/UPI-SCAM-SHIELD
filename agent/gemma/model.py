@@ -1,6 +1,3 @@
-"""Ollama-backed Gemma client isolated from detection modules."""
-
-from __future__ import annotations
 
 import time
 from typing import Any
