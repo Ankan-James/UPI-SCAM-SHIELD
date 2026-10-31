@@ -1,6 +1,6 @@
 # NUMPE public website
 
-This folder contains the framework-free public information website. The pages use plain HTML, CSS, and vanilla JavaScript; they do not need a build step or a running backend. The separate `disha-frontend/` directory is an existing React/Vite app prototype and is not required to serve these static pages.
+This folder contains the framework-free public information website. The pages use plain HTML, CSS, and vanilla JavaScript; they do not need a build step. The login page needs the API backend to register and authenticate users. The separate `disha-frontend/` directory is an existing React/Vite app prototype and is not required to serve these static pages.
 
 ## What was wrong with the previous site
 
@@ -32,9 +32,13 @@ The earlier browser failure was caused by a stopped local server (`ERR_EMPTY_RES
 - `download.html`: Android installation guidance and APK availability.
 - `privacy.html`: website and backend data-practice summary based on the current source.
 - `404.html`: static not-found page; configure the host to serve it for missing paths.
-- `pages/`: compatibility redirects for the original about, download, and privacy URLs; the old login path now explains that the public site has no sign-in.
+- `pages/login.html`: email/password login and signup; `pages/` also contains compatibility redirects for the original about, download, and privacy URLs.
 
 The mobile navigation is enhanced only when JavaScript initializes; without JavaScript, the links remain visible. The awareness-page disclosures use native `<details>` elements. The landing-page payment simulator checks its inputs locally for common suspicious terms and amounts of INR 10,000 or more. It never submits or saves the entered details and does not send money. Its keyword and amount checks are educational signals, not a fraud verdict.
+
+## Local authentication
+
+Start the backend from the repository root with `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`, then serve this folder on port 5501 as shown above. The login page calls `POST /api/auth/register` and `POST /api/auth/login` on the API URL in `js/config.js` (`apiBaseUrl`, default `http://127.0.0.1:8000`). The backend allows both `http://127.0.0.1:5501` and `http://localhost:5501`; set `FRONTEND_ORIGIN` to a comma-separated list of deployed website origins when hosting elsewhere. Successful login stores only the session token and basic user details in tab-scoped `sessionStorage`; passwords are not stored. New passwords are bcrypt-hashed by the backend.
 
 ## APK release configuration
 

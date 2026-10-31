@@ -5,9 +5,9 @@ from __future__ import annotations
 import sqlite3
 import re
 import unicodedata
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
-from backend.app.database.connection import get_connection
+from backend.app.config import settings
 from backend.app.security.password import hash_password, verify_password
 from backend.app.security.sessions import expires_at, hash_token, make_token
 
@@ -58,6 +58,8 @@ class AuthService:
             else:
                 ascii_name = unicodedata.normalize("NFKD", display_name).encode("ascii", "ignore").decode("ascii")
                 username_base = re.sub(r"[^a-z0-9._-]", "", ascii_name.lower())[:40] or "numpe-user"
+                if len(username_base) < 3:
+                    username_base = f"{username_base}-user"
                 normalized_username = username_base
                 suffix = 2
                 while db.execute(
@@ -101,10 +103,9 @@ class AuthService:
             raise ValueError("invalid email or password")
         token = make_token()
         token_hash = hash_token(token)
-        expires = datetime.now(timezone.utc) + timedelta(minutes=60)
         db.execute(
             "INSERT INTO sessions (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
-            (row["user_id"], token_hash, expires.strftime("%Y-%m-%dT%H:%M:%SZ")),
+            (row["user_id"], token_hash, expires_at(settings.access_token_expire_minutes)),
         )
         return row["user_id"], token
 

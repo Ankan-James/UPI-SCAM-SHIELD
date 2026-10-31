@@ -18,19 +18,9 @@ from backend.app.config import settings
 
 app = FastAPI(title="UPI Scam Shield API")
 init_db()
-frontend_origins = {
-    "http://127.0.0.1:5501",
-    "http://localhost:5501",
-}
-if settings.frontend_origin != "*":
-    frontend_origins.update(
-        origin.strip()
-        for origin in settings.frontend_origin.split(",")
-        if origin.strip()
-    )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=sorted(frontend_origins),
+    allow_origins=settings.allowed_frontend_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
