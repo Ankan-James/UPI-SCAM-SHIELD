@@ -1,74 +1,34 @@
-"""Rule-based scam detection for text or UPI IDs."""
+"""Deterministic analysis of suspicious message content."""
 
 from __future__ import annotations
 
-from .scam_patterns import keyword_hits, normalize_text
+from typing import Any
 
-SUSPICIOUS_PATTERNS = [
-    "claim reward",
-    "verify otp",
-    "urgent payment",
-    "bank update",
-    "security code",
-    "click here",
-    "refund",
-    "bonus",
-]
+from .scam_patterns import detect_patterns
 
 
-def analyze_text_message(value: str) -> dict:
-    text = normalize_text(value)
-    matches = keyword_hits(text)
-    score = 0
-    indicators: list[str] = []
+def analyze_text_message(value: str) -> dict[str, Any]:
+    """Analyze text with contextual deterministic rules."""
+    findings = detect_patterns(value)
+    if "http" in value.lower() or "www." in value.lower():
+        from .url_analyzer import analyze_url
+        from agent.processing.text_processor import process_text
 
-    urgency_terms = ["urgent", "immediately", "today only", "act now", "asap"]
-    reward_terms = ["claim reward", "reward", "bonus", "prize", "cashback", "refund"]
-    credential_terms = ["otp", "password", "mpin", "security code", "verify account", "kyc"]
-
-    for term in urgency_terms:
-        if term in text:
-            score += 25
-            indicators.append(f"Urgency marker: {term}")
-
-    for term in reward_terms:
-        if term in text:
-            score += 25
-            indicators.append(f"Reward or refund marker: {term}")
-
-    for term in credential_terms:
-        if term in text:
-            score += 25
-            indicators.append(f"Credential request: {term}")
-
-    for phrase in SUSPICIOUS_PATTERNS:
-        if phrase in text:
-            indicators.append(phrase)
-            score += 12
-
-    if "@" in text and text.count("@") == 1:
-        score += 8
-        indicators.append("UPI-style identifier detected")
-
-    if "unknown" in text or "not in contact" in text:
-        score += 30
-        indicators.append("Recipient is not a trusted contact")
-
-    if "claim" in text or "reward" in text:
-        score += 25
-        indicators.append("Reward claim language detected")
-
-    if len(text) > 180:
-        score += 8
-        indicators.append("Long message with repeated request")
-
-    for category in matches:
-        score += 10
-        indicators.append(f"Risk keyword: {category}")
-
-    score = min(score, 100)
+        for url in process_text(value).urls:
+            result = analyze_url(url)
+            findings.extend(result["findings"])
+    unique = {item["rule_id"]: item for item in findings}
+    findings = list(unique.values())
+    score = min(
+        100,
+        sum({"DANGEROUS_CREDENTIAL_REQUEST": 30, "URGENCY_OR_THREAT": 15,
+             "KYC_OR_IMPERSONATION": 15, "PAYMENT_MANIPULATION": 15,
+             "IMPERSONATION": 15, "REMOTE_ACCESS_SCAM": 30,
+             "SUSPICIOUS_URL": 25}.get(item["category"], 0) for item in findings),
+    )
     return {
         "score": score,
-        "indicators": sorted(set(indicators)),
-        "risk_level": "high" if score >= 70 else "medium" if score >= 35 else "low",
+        "indicators": [item["evidence"] for item in findings],
+        "risk_level": "HIGH" if score >= 70 else "MEDIUM" if score >= 30 else "LOW",
+        "findings": findings,
     }

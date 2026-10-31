@@ -1,24 +1,39 @@
-"""High-level risk analysis entry point."""
+"""Public, backwards-compatible scam-analysis entry points."""
 
 from __future__ import annotations
 
-from .detection.risk_scorer import calculate_risk
-from .detection.text_analyzer import analyze_text_message
-from .detection.url_analyzer import analyze_url
+from typing import Any
+
+from agent.detection.scam_detector import ScamDetector
+from agent.schemas.analysis_schema import AnalysisRequest, AnalysisResult, InputType
+
+_DEFAULT_DETECTOR = ScamDetector()
 
 
-def analyze_input(input_type: str, value: str) -> dict:
-    normalized_type = (input_type or "text").strip().lower()
-    audit = {"type": normalized_type, "input": (value or "")[:500]}
+def analyze(request: AnalysisRequest | dict[str, Any]) -> AnalysisResult:
+    """Analyze a request through the standalone NUMPE agent."""
+    return _DEFAULT_DETECTOR.analyze(request)
 
-    if normalized_type in {"text", "upi_id", "qr", "image"}:
-        findings = analyze_text_message(value or "")
-    elif normalized_type == "url":
-        findings = analyze_url(value or "")
-    else:
-        findings = analyze_text_message(value or "")
 
-    risk = calculate_risk(findings["score"], findings["indicators"], source=normalized_type)
-    risk.update({"type": normalized_type, "analysis": findings})
-    audit.update(risk)
-    return audit
+def analyze_input(input_type: str, value: str) -> dict[str, Any]:
+    """Preserve the result shape consumed by the existing backend adapter."""
+    normalized_type = input_type.strip().lower()
+    normalized_type = {"upi_id": "recipient", "image": "screenshot"}.get(
+        normalized_type, normalized_type
+    )
+    result = analyze(
+        AnalysisRequest(
+            input_type=InputType(normalized_type),
+            content=value,
+        )
+    )
+    indicators = [item.evidence for item in result.indicators]
+    return {
+        "type": result.input_type.value,
+        "score": result.risk_score,
+        "level": result.risk_level.value,
+        "indicators": indicators,
+        "recommendation": result.recommendation,
+        "analysis": result.model_dump(mode="json"),
+        "status": result.status,
+    }

@@ -1,5 +1,5 @@
-"""LLM-assisted scam analysis helpers for the Numpe UPI Scam Shield."""
+"""Standalone AI-assisted scam analysis for the NUMPE UPI Scam Shield."""
 
-from .agent import analyze_input
+from .agent import analyze, analyze_input
 
-__all__ = ["analyze_input"]
+__all__ = ["analyze", "analyze_input"]
