@@ -60,6 +60,30 @@ class AnalysisHistory(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
 
+class Account(Base):
+    __tablename__ = "accounts"
+
+    account_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), unique=True, nullable=False)
+    account_number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
+    upi_id: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    balance_in_paise: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    transaction_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    sender_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True)
+    receiver_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True)
+    amount_in_paise: Mapped[int] = mapped_column(Integer, nullable=False)
+    currency: Mapped[str] = mapped_column(String(10), default="INR", nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+
 class Report(Base):
     __tablename__ = "reports"
 
