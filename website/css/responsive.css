@@ -1,0 +1,68 @@
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, 0.85fr); gap: 38px; }
+  .split-section { gap: 38px; }
+  .primary-navigation { gap: 19px; }
+}
+
+@media (max-width: 720px) {
+  .container, .narrow { width: min(100% - 36px, 560px); }
+  .section { padding-block: 64px; }
+  .hero { padding-block: 64px 72px; }
+  .hero-grid, .split-section, .download-layout { grid-template-columns: 1fr; gap: 36px; }
+  .hero-card { max-width: 520px; }
+  .card-grid-three, .card-grid-two { grid-template-columns: 1fr; }
+  .card-grid { gap: 14px; }
+  .feature-card, .info-card, .awareness-card { padding: 23px; }
+  .awareness-card { padding-top: 56px; }
+  .awareness-number { left: 23px; }
+  .footer-main { grid-template-columns: 1fr 1fr; gap: 30px; }
+  .footer-brand { grid-column: 1 / -1; }
+  .safety-banner, .cta-panel { align-items: flex-start; flex-direction: column; }
+  .download-card { padding: 28px; }
+  .page-hero { padding-block: 58px 48px; }
+
+  body.menu-enhanced .menu-toggle { display: inline-flex; }
+
+  body.menu-enhanced .primary-navigation {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 0;
+    left: 0;
+    display: none;
+    align-items: stretch;
+    gap: 0;
+    padding: 10px 18px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--white);
+    box-shadow: 0 16px 20px rgb(16 35 63 / 8%);
+  }
+
+  body.menu-enhanced .primary-navigation[data-open] { display: flex; flex-direction: column; }
+
+  .primary-navigation a { padding: 12px 10px; }
+
+  .primary-navigation .nav-cta { margin-top: 5px; text-align: center; }
+
+  body:not(.menu-enhanced) .primary-navigation { flex-wrap: wrap; gap: 10px 17px; padding-block: 12px; }
+}
+
+@media (max-width: 480px) {
+  .container, .narrow { width: calc(100% - 32px); }
+  .section { padding-block: 54px; }
+  .hero { padding-block: 52px 58px; }
+  h1 { font-size: clamp(2.4rem, 12vw, 3.25rem); }
+  .page-hero h1 { font-size: clamp(2.25rem, 10vw, 3rem); }
+  .hero-lede { font-size: 1.03rem; }
+  .button-row { align-items: stretch; flex-direction: column; }
+  .button-row .button { width: 100%; }
+  .hero-card { padding: 22px; }
+  .footer-main { grid-template-columns: 1fr 1fr; gap: 25px 18px; padding-block: 42px 30px; }
+  .footer-bottom { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .callout-panel, .not-found-card { padding: 26px; }
+  .cta-panel { padding: 25px; }
+  .download-card { padding: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+}

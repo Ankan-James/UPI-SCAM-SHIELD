@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10233f">
+    <meta name="description" content="Check NUMPE Android app availability and read safe installation guidance.">
+    <title>Get the NUMPE app | NUMPE</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="js/main.js" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/download.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header"><div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="NUMPE home"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" data-menu-toggle><span class="sr-only">Open navigation menu</span><span class="menu-icon" aria-hidden="true"></span></button>
+      <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation" data-navigation>
+        <a href="about.html" data-nav-link>About</a><a href="awareness.html" data-nav-link>Safety guide</a><a href="download.html" data-nav-link aria-current="page">Get the app</a><a class="nav-cta" href="awareness.html">Stay safer</a>
+      </nav>
+    </div></header>
+    <main id="main">
+      <section class="page-hero section"><div class="container narrow">
+        <p class="eyebrow">Android app</p><h1>Explore NUMPE when a verified release is available.</h1>
+        <p class="hero-lede">NUMPE is a simulated payment-safety demonstration. This page will link to an APK only after a real release has been published and checked.</p>
+      </div></section>
+      <section class="section section-white"><div class="container download-layout">
+        <article class="download-card">
+          <span class="app-icon" aria-hidden="true">N</span>
+          <p class="eyebrow">NUMPE for Android</p>
+          <h2>Demo app download</h2>
+          <p>Payment flows in this project use simulated data only. The app does not connect to a bank or move real money.</p>
+          <div class="download-action">
+            <a class="button button-primary" id="apk-download-link" href="#" hidden>Download Android APK</a>
+            <p class="notice notice-amber" id="apk-unavailable" role="status">No verified APK is published yet. Please check back later; no download will start from this page.</p>
+          </div>
+          <p class="download-meta" id="apk-release-meta" hidden></p>
+        </article>
+        <aside class="download-side">
+          <h2>Before installing</h2>
+          <ol class="numbered-list">
+            <li><span>1</span><div><strong>Use a trusted source</strong><p>Only install an APK linked from an official NUMPE release channel you can verify.</p></div></li>
+            <li><span>2</span><div><strong>Review Android's warning</strong><p>Android may ask you to allow installs from your browser. Avoid enabling this for unknown sources.</p></div></li>
+            <li><span>3</span><div><strong>Remember this is a demo</strong><p>Do not enter real payment credentials or treat simulated activity as a completed transfer.</p></div></li>
+          </ol>
+        </aside>
+      </div></section>
+      <section class="section"><div class="container narrow prose">
+        <h2>Installation help</h2>
+        <details class="faq-item"><summary>Why is the download not available?</summary><p>An APK has not been configured as a verified public release. The site intentionally avoids showing a download link until a real release is published.</p></details>
+        <details class="faq-item"><summary>Android says it cannot install the app. What should I do?</summary><p>Confirm that the file came from the official release source, that the download completed, and that your device supports the app. Do not bypass Android warnings for a file you cannot verify.</p></details>
+        <details class="faq-item"><summary>Does this app make real payments?</summary><p>No. NUMPE is a demonstration project. Its sample wallet, balances, recipients, and payment activity are simulated and are not connected to a bank or UPI.</p></details>
+        <p class="section-gap"><a class="text-link" href="about.html">Read more about the project <span aria-hidden="true">&rarr;</span></a></p>
+      </div></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-main">
+      <div class="footer-brand"><a class="brand brand-light" href="index.html"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a><p>A payment-safety learning project. All payment experiences in the demo are simulated.</p></div>
+      <div class="footer-links"><h2>Explore</h2><a href="about.html">About NUMPE</a><a href="awareness.html">Safety guide</a><a href="download.html">App availability</a></div>
+      <div class="footer-links"><h2>Information</h2><a href="privacy.html">Privacy</a><a href="index.html">Home</a></div>
+    </div><div class="container footer-bottom"><span>&copy; <span data-current-year>2026</span> NUMPE project</span><span>Not a bank, payment provider, or fraud guarantee.</span></div></footer>
+  </body>
+</html>

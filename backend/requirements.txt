@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard]
-pydantic
-passlib[argon2]
-python-multipart
-python-dotenv
-httpx<0.28
-pytest

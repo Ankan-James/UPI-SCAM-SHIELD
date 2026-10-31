@@ -16,3 +16,4 @@ class Settings:
     frontend_origin: str = os.getenv("FRONTEND_ORIGIN", "*")
 
 settings = Settings()
+

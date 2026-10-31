@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10233f">
+    <meta name="description" content="Privacy information for the NUMPE public website and related demonstration project.">
+    <title>Privacy | NUMPE</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="js/main.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header"><div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="NUMPE home"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" data-menu-toggle><span class="sr-only">Open navigation menu</span><span class="menu-icon" aria-hidden="true"></span></button>
+      <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation" data-navigation>
+        <a href="about.html" data-nav-link>About</a><a href="awareness.html" data-nav-link>Safety guide</a><a href="download.html" data-nav-link>Get the app</a><a class="nav-cta" href="index.html">Home</a>
+      </nav>
+    </div></header>
+    <main id="main">
+      <section class="page-hero section"><div class="container narrow"><p class="eyebrow">Privacy information</p><h1>What the project does with information.</h1><p class="hero-lede">This page distinguishes the public static website from the separate NUMPE app and backend. It describes the repository's current implementation and does not promise a retention period or deletion process that has not been defined.</p></div></section>
+      <section class="section section-white"><div class="container narrow prose">
+        <p class="policy-note"><strong>Scope:</strong> The public website pages do not require an account and do not connect to the NUMPE backend. The app and backend are separate project components.</p>
+        <h2>Information collected by this website</h2>
+        <p>The static website code does not include analytics scripts, cookies, account forms, or a feature that sends visitor information to the app backend. Your browser may keep ordinary cached website files. If the site is hosted online, the hosting or delivery provider may process request and security logs; the project's hosting configuration and provider retention settings are not established here.</p>
+        <h2>Information processed by the separate app/backend</h2>
+        <p>If you use a connected backend deployment, its current code can process and store:</p>
+        <ul>
+          <li>Account registration details: username, email address, and a password hash (the password itself is hashed before it is stored).</li>
+          <li>Session records: a hash of the bearer token, creation and expiry times, and any revocation time.</li>
+          <li>Analysis requests: the analysis type, the first 64 characters of the submitted input, and the resulting risk score, level, explanation, recommendation, and timestamp. Do not submit passwords, payment PINs, one-time passwords, or other sensitive information.</li>
+          <li>Reports: the report type, full description submitted in the report, status, and timestamp.</li>
+        </ul>
+        <p>The repository configures SQLite as the default backend database, but a deployment can override the database path. The current public website does not send data to these endpoints.</p>
+        <h2>Cookies, analytics, and third parties</h2>
+        <p>The public website does not set analytics cookies or embed analytics code. The backend analysis implementation inspected for this page uses the project's local analysis code; this site does not send user content to an AI provider. A deployed hosting provider may handle requests under its own service terms and settings.</p>
+        <h2>Retention and deletion</h2>
+        <p>The project does not define a published retention schedule. The current backend does not expose a user account deletion endpoint, and this website cannot delete backend records. Database operators should manage stored records according to their deployment, applicable requirements, and a documented retention policy.</p>
+        <h2>Contact</h2>
+        <p>No dedicated privacy contact address is published in this project. Do not send sensitive account or payment information through public issue trackers.</p>
+        <p class="policy-updated">Implementation reviewed: 31 October 2026.</p>
+      </div></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-main">
+      <div class="footer-brand"><a class="brand brand-light" href="index.html"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a><p>A payment-safety learning project. All payment experiences in the demo are simulated.</p></div>
+      <div class="footer-links"><h2>Explore</h2><a href="about.html">About NUMPE</a><a href="awareness.html">Safety guide</a><a href="download.html">App availability</a></div>
+      <div class="footer-links"><h2>Information</h2><a href="privacy.html" aria-current="page">Privacy</a><a href="index.html">Home</a></div>
+    </div><div class="container footer-bottom"><span>&copy; <span data-current-year>2026</span> NUMPE project</span><span>Not a bank, payment provider, or fraud guarantee.</span></div></footer>
+  </body>
+</html>

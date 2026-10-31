@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10233f">
+    <meta name="description" content="Learn about NUMPE, its simulated payment app, backend, and educational Scam Shield experience.">
+    <title>About NUMPE | NUMPE</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="js/main.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header"><div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="NUMPE home"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" data-menu-toggle><span class="sr-only">Open navigation menu</span><span class="menu-icon" aria-hidden="true"></span></button>
+      <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation" data-navigation>
+        <a href="about.html" data-nav-link aria-current="page">About</a><a href="awareness.html" data-nav-link>Safety guide</a><a href="download.html" data-nav-link>Get the app</a><a class="nav-cta" href="download.html">Explore NUMPE</a>
+      </nav>
+    </div></header>
+    <main id="main">
+      <section class="page-hero section"><div class="container narrow">
+        <p class="eyebrow">About the project</p><h1>Digital payment safety, made tangible.</h1>
+        <p class="hero-lede">NUMPE brings a simulated UPI-style app and a Scam Shield learning experience together so people can explore payment journeys without moving real money.</p>
+        <div class="notice notice-amber"><strong>Demonstration project:</strong> NUMPE is not a bank or payment service and does not connect to UPI or any bank.</div>
+      </div></section>
+      <section class="section section-white"><div class="container narrow prose">
+        <h2>What NUMPE is for</h2>
+        <p>The project explores how a payment interface can make room for a careful review before a user acts. It combines demo payment flows with explanations of common scam patterns and simple safety reminders.</p>
+        <p>The public website is informational. It does not create an account, process a payment, or submit content for analysis.</p>
+        <div class="card-grid card-grid-two section-gap" id="demo">
+          <article class="info-card"><p class="eyebrow">Mobile application</p><h3>A simulated wallet experience</h3><p>The Flutter app includes demo onboarding, virtual send and receive journeys, QR inspection, activity, scam reporting, and Scam Shield screens. Demo names, balances, QR payloads, and payments are simulated; no real transfer is initiated.</p></article>
+          <article class="info-card"><p class="eyebrow">Backend</p><h3>Separate API services</h3><p>The Python FastAPI backend provides account, analysis, report, history, and other API routes. The app's current payment experience is a prototype and is not connected to bank or UPI infrastructure.</p></article>
+        </div>
+        <section class="content-block" id="shield">
+          <p class="eyebrow">AI Scam Shield</p><h2>Helpful signals, not a verdict</h2>
+          <p>The project intends Scam Shield to help people notice suspicious payment signals. The current backend implementation uses rule-based text and URL checks and returns a risk score, indicators, and a recommendation; it is not a model-backed verdict. Treat results as educational signals only: they may be incomplete or incorrect and do not verify a recipient or guarantee that a transaction is safe.</p>
+          <p>Always verify payment details in the official app or service you use. Never share your PIN or one-time password, even if a screen or message appears reassuring.</p>
+        </section>
+        <section class="content-block">
+          <p class="eyebrow">What it does not do</p><h2>No real-money transfers</h2>
+          <ul class="plain-list">
+            <li>It does not connect to a bank account or UPI network.</li>
+            <li>Demo transaction confirmations and balances are not evidence of a real payment.</li>
+            <li>Scam Shield does not guarantee fraud detection or replace your bank's guidance.</li>
+            <li>The public website does not depend on the backend to display its pages.</li>
+          </ul>
+        </section>
+      </div></section>
+      <section class="section"><div class="container cta-panel"><div><p class="eyebrow">Continue exploring</p><h2>Learn practical ways to pause and verify.</h2></div><div class="button-row"><a class="button button-primary" href="awareness.html">Read the safety guide</a><a class="button button-secondary" href="download.html">App availability</a></div></div></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-main">
+      <div class="footer-brand"><a class="brand brand-light" href="index.html"><span class="brand-mark" aria-hidden="true">N</span><span>numpe</span></a><p>A payment-safety learning project. All payment experiences in the demo are simulated.</p></div>
+      <div class="footer-links"><h2>Explore</h2><a href="about.html">About NUMPE</a><a href="awareness.html">Safety guide</a><a href="download.html">App availability</a></div>
+      <div class="footer-links"><h2>Information</h2><a href="privacy.html">Privacy</a><a href="index.html">Home</a></div>
+    </div><div class="container footer-bottom"><span>&copy; <span data-current-year>2026</span> NUMPE project</span><span>Not a bank, payment provider, or fraud guarantee.</span></div></footer>
+  </body>
+</html>
